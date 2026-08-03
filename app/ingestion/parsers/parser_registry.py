@@ -2,10 +2,7 @@ from app.ingestion.parsers.document_parser import DocumentParser
 from app.ingestion.parsers.docx_parser import DOCXParser
 from app.ingestion.parsers.markdown_parser import MarkdownParser
 from app.ingestion.parsers.pdf_parser import PDFParser
-
-
-class ParserNotFoundError(Exception):...
-
+from app.ingestion.exceptions import ParserNotFoundError
 
 class ParserFactory:
     def __init__(self):

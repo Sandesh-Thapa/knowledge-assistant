@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TypedDict, Any
 
 @dataclass
 class RawDocument:
@@ -10,15 +11,31 @@ class RawDocument:
     category: str
 
 
+class DocumentMetadata(TypedDict):
+    page_count: int
+    title: str
+    author: str
+
+
+@dataclass
+class DocumentPage:
+    page_number: int
+    text: str
+
+
 @dataclass
 class ParsedDocument:
-    text: str
-    metadata: dict[str, any] = field(default_factory=dict)
     filename: str
+    metadata: DocumentMetadata
+    pages: list[DocumentPage]
+
+    @property
+    def text(self) -> str:
+        return "\n\n".join(page.text for page in self.pages)
 
 
 @dataclass
 class DocumentChunk:
     chunk_index: int
     text: str
-    metadata: dict[str, any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
