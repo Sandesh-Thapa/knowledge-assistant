@@ -34,8 +34,13 @@ class ParsedDocument:
         return "\n\n".join(page.text for page in self.pages)
 
 
+class ChunkMetadata(TypedDict):
+    filename: str
+    page_number: int
+
+
 @dataclass
 class DocumentChunk:
     chunk_index: int
     text: str
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: ChunkMetadata
