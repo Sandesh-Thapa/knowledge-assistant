@@ -105,3 +105,51 @@ def test_does_not_modify_original_document(document):
     chunker.chunk(document)
 
     assert [page.text for page in document.pages] == original_texts
+
+
+@pytest.mark.parametrize(
+    ("chunk_size", "overlap", "expected"),
+    [
+        (5, 0, ["ABCDE", "FGHIJ", "KLMNO"]),
+        (5, 2, ["ABCDE", "DEFGH", "GHIJK", "JKLMN", "MNO"]),
+        (5, 4, ["ABCDE", "BCDEF", "CDEFG", "DEFGH", "EFGHI",
+                "FGHIJ", "GHIJK", "HIJKL", "IJKLM", "JKLMN",
+                "KLMNO", "LMNO", "MNO", "NO", "O"]),
+    ]
+)
+def test_chunks_with_overlap(chunk_size, overlap, expected):
+    chunker = FixedCharacterChunker(chunk_size=chunk_size, overlap=overlap)
+
+    document = ParsedDocument(
+        filename="test.pdf",
+        metadata={"page_count": 1, "title": "", "author": ""},
+        pages=[DocumentPage(page_number=1, text="ABCDEFGHIJKLMNO")],
+    )
+
+    chunks = chunker.chunk(document)
+
+    assert [chunk.text for chunk in chunks] == expected
+
+
+@pytest.mark.parametrize("chunk_size", [0, -1])
+def test_rejects_invalid_chunk_size(chunk_size):
+    with pytest.raises(ValueError):
+        FixedCharacterChunker(chunk_size=chunk_size)
+
+
+@pytest.mark.parametrize("overlap", [-1, 5, 10])
+def test_rejects_invalid_overlap(overlap):
+    with pytest.raises(ValueError):
+        FixedCharacterChunker(chunk_size=5, overlap=overlap)
+
+
+@pytest.mark.parametrize("value", [1.5, "5", True])
+def test_rejects_non_integer_chunk_size(value):
+    with pytest.raises(TypeError):
+        FixedCharacterChunker(chunk_size=value)
+
+
+@pytest.mark.parametrize("value", [1.5, "2", True])
+def test_rejects_non_integer_overlap(value):
+    with pytest.raises(TypeError):
+        FixedCharacterChunker(chunk_size=5, overlap=value)
